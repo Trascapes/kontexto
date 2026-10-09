@@ -1,5 +1,11 @@
 import { getDb } from '../lib/firebase.js';
 
+const fallbackWords = [
+  'apfel', 'brücke', 'garten', 'haus', 'insel', 'kerze', 'lampe',
+  'meer', 'morgen', 'rad', 'schlüssel', 'schnee', 'sonne', 'stuhl',
+  'tisch', 'vogel', 'wasser', 'wolke', 'zug', 'baum'
+];
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Methode nicht erlaubt' });
@@ -22,23 +28,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const prompt = 'Generiere ein einzelnes, häufiges deutsches Substantiv (kein Eigenname, kein Plural). Nur das Wort, sonst nichts.';
-    const aiRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
-    const generated = (await aiRes.text()).trim().toLowerCase();
-
-    if (!aiRes.ok || !generated || generated.startsWith('{"error"')) {
-      throw new Error(`Wortdienst antwortete mit HTTP ${aiRes.status}`);
-    }
-
+    const word = fallbackWords[getDateIndex(date)];
     await words.doc(date).set({
       date,
-      word: generated,
+      word,
       createdAt: new Date().toISOString()
     });
 
-    return res.status(200).json({ word: generated });
+    return res.status(200).json({ word });
   } catch (error) {
-    console.error('daily-word provider failed', error);
-    return res.status(502).json({ error: 'Der Wortdienst ist momentan nicht erreichbar.' });
+    console.error('daily-word save failed', error);
+    return res.status(500).json({ error: 'Das Wort konnte nicht gespeichert werden.' });
   }
+}
+
+function getDateIndex(date) {
+  let hash = 0;
+  for (const character of date) {
+    hash = (hash * 31 + character.charCodeAt(0)) % fallbackWords.length;
+  }
+  return hash;
 }
