@@ -1,17 +1,27 @@
-﻿// Vercel Serverless Function – liefert alle vergangenen Spiele
+import { db } from '../lib/firebase.js';
+
 export default async function handler(req, res) {
-  // Alle gespeicherten Wörter aus der DB abrufen
-  const games = []; // z. B. aus Vercel KV oder Supabase
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Methode nicht erlaubt' });
+  }
 
-  const formatted = games.map(g => ({
-    date: g.date,
-    dateFormatted: new Date(g.date + 'T12:00:00').toLocaleDateString('de-DE', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short'
-    })
-  }));
+  try {
+    const snapshot = await db.collection('dailyWords').orderBy('date', 'desc').limit(100).get();
+    const games = snapshot.docs.map((doc) => {
+      const { date } = doc.data();
+      return {
+        date,
+        dateFormatted: new Date(`${date}T12:00:00`).toLocaleDateString('de-DE', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short'
+        })
+      };
+    });
 
-  return res.status(200).json({ games: formatted });
+    return res.status(200).json({ games });
+  } catch (error) {
+    console.error('past-games failed', error);
+    return res.status(500).json({ error: 'Vergangene Spiele konnten nicht geladen werden.' });
+  }
 }
-

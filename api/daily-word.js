@@ -1,36 +1,39 @@
-﻿// Vercel Serverless Function – läuft täglich um 00:00 Uhr
-export default async function handler(req, res) {
-  const today = new Date().toISOString().split('T')[0];
+import { db } from '../lib/firebase.js';
 
-  // 1. Prüfen, ob das Wort für heute schon existiert
-  const existing = await getWordFromDB(today);
-  if (existing) {
-    return res.status(200).json({ word: existing });
+const words = db.collection('dailyWords');
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Methode nicht erlaubt' });
   }
 
-  // 2. Neues Wort von Pollinations.ai generieren (kostenlos, kein Key nötig)
-  const prompt = `Generiere ein einzelnes, häufiges deutsches Substantiv (kein Eigenname, kein Plural). Nur das Wort, sonst nichts.`;
-  const aiRes = await fetch(
-    `https://text.pollinations.ai/${encodeURIComponent(prompt)}`
-  );
-  const word = (await aiRes.text()).trim().toLowerCase();
+  const date = typeof req.query?.date === 'string'
+    ? req.query.date
+    : new Date().toISOString().split('T')[0];
 
-  // 3. In der Datenbank speichern
-  await saveWordToDB(today, word);
+  try {
+    const existing = await words.doc(date).get();
+    if (existing.exists) {
+      return res.status(200).json({ word: existing.data().word });
+    }
 
-  return res.status(200).json({ word });
+    const prompt = 'Generiere ein einzelnes, häufiges deutsches Substantiv (kein Eigenname, kein Plural). Nur das Wort, sonst nichts.';
+    const aiRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
+    const generated = (await aiRes.text()).trim().toLowerCase();
+
+    if (!aiRes.ok || !generated || generated.startsWith('{"error"')) {
+      throw new Error(`Wortdienst antwortete mit HTTP ${aiRes.status}`);
+    }
+
+    await words.doc(date).set({
+      date,
+      word: generated,
+      createdAt: new Date().toISOString()
+    });
+
+    return res.status(200).json({ word: generated });
+  } catch (error) {
+    console.error('daily-word failed', error);
+    return res.status(500).json({ error: 'Das Wort des Tages konnte nicht geladen werden.' });
+  }
 }
-
-// Platzhalter – durch deine DB ersetzen (z. B. Vercel KV oder Supabase)
-async function getWordFromDB(date) {
-  // Beispiel mit Vercel KV:
-  // const { kv } = await import('@vercel/kv');
-  // return await kv.get(`word:${date}`);
-  return null;
-}
-
-async function saveWordToDB(date, word) {
-  // await kv.set(`word:${date}`, word);
-  console.log(`Gespeichert: ${date} → ${word}`);
-}
-
