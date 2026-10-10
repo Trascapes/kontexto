@@ -1,4 +1,4 @@
-import { db } from '../lib/firebase.js';
+import { getDb } from '../lib/firebase.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -11,6 +11,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    const db = getDb();
     const snapshot = await db.collection('dailyWords').doc(date).get();
     const secretWord = snapshot.data()?.word;
     if (!secretWord) {
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
       throw new Error('HF_TOKEN is not configured');
     }
 
-    const model = 'alphaedge-ai/Qwen3-Embedding-deu-16384';
+      const model = 'alphaedge-ai/Qwen3-Embedding-deu-16384';
     const [guessEmb, secretEmb] = await Promise.all([
       getEmbedding(guess.trim().toLowerCase(), model, token),
       getEmbedding(secretWord, model, token)
@@ -39,7 +40,7 @@ export default async function handler(req, res) {
 }
 
 async function getEmbedding(text, model, token) {
-  const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+  const response = await fetch(`https://router.huggingface.co/hf-inference/models/${model}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
