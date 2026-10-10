@@ -1,265 +1,350 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kontext – Das deutsche Wortspiel</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #121213;
+      --panel: #1a1a1b;
+      --panel-alt: #202021;
+      --line: #3a3a3c;
+      --text: #e8e8e8;
+      --muted: #9aa0a6;
+      --green: #6aaa64;
+      --green-dark: #538d52;
+      --yellow: #b59f3b;
+      --gray: #747d8c;
+      --danger: #ef5350;
+      --shadow: rgba(0, 0, 0, 0.2);
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #121213;
-      color: #e8e8e8;
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 20px;
+      justify-content: center;
+      background: linear-gradient(180deg, #121213 0%, #18181a 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 22px;
     }
-    h1 { font-size: 2rem; margin-bottom: 4px; color: #6aaa64; }
-    .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 24px; }
-    .game-container { width: 100%; max-width: 500px; }
-    .input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+
+    .app {
+      width: min(100%, 560px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      letter-spacing: -0.06em;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 22px;
+      font-size: 0.96rem;
+    }
+
+    .date-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 16px 35px var(--shadow);
+      padding: 18px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
     #guess-input {
       flex: 1;
-      padding: 14px 16px;
-      font-size: 1.1rem;
-      border: 2px solid #3a3a3c;
-      border-radius: 8px;
-      background: #1a1a1b;
-      color: #e8e8e8;
+      background: var(--panel);
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      padding: 15px 16px;
+      color: var(--text);
+      font-size: 1.05rem;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s ease, transform 0.2s ease;
     }
-    #guess-input:focus { border-color: #6aaa64; }
-    #guess-btn {
-      padding: 14px 24px;
-      font-size: 1rem;
-      font-weight: 600;
-      background: #6aaa64;
-      color: #fff;
+
+    #guess-input:focus {
+      border-color: var(--green);
+      transform: translateY(-1px);
+    }
+
+    #guess-input:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    #guess-btn,
+    .ghost-btn {
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: transform 0.15s ease, filter 0.2s ease, background 0.2s ease;
+      font-weight: 700;
     }
-    #guess-btn:hover { background: #5a9a54; }
-    #guess-btn:disabled { background: #3a3a3c; cursor: not-allowed; }
-    #message { min-height: 24px; color: #e8b84b; font-size: 0.9rem; margin-bottom: 12px; }
-    .guess-list { list-style: none; }
+
+    #guess-btn {
+      padding: 14px 18px;
+      background: var(--green);
+      color: white;
+      min-width: 120px;
+    }
+
+    #guess-btn:hover,
+    .ghost-btn:hover { filter: brightness(1.05); }
+
+    #guess-btn:disabled {
+      background: var(--line);
+      color: var(--muted);
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    #guess-btn:active,
+    .ghost-btn:active {
+      transform: translateY(1px);
+    }
+
+    .ghost-btn {
+      background: #2b2c2d;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      margin-left: auto;
+    }
+
+    #message {
+      min-height: 24px;
+      margin-bottom: 12px;
+      font-size: 0.92rem;
+      color: #f6d365;
+    }
+
+    .guess-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .guess-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 16px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-      font-size: 1.05rem;
-      animation: fadeIn 0.3s ease;
+      gap: 12px;
+      background: var(--panel-alt);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 12px 14px;
+      animation: fadeIn 0.18s ease;
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-    .guess-item .word { font-weight: 600; }
-    .guess-item .rank { font-family: monospace; font-size: 1.1rem; }
-    .guess-item .hint { font-size: 0.8rem; color: rgba(255,255,255,0.6); }
-    .rank-1 { background: #6aaa64; color: #fff; }
-    .rank-hot { background: #b59f3b; color: #fff; }
-    .rank-warm { background: #3a3a3c; color: #e8e8e8; }
-    .rank-cold { background: #1a1a1b; color: #888; border: 1px solid #3a3a3c; }
-    .header-row {
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-3px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .guess-item .word-wrap {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      width: 100%;
-      max-width: 500px;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
     }
-    .date-display { color: #888; font-size: 0.9rem; }
-    .past-games-btn {
-      background: #3a3a3c;
-      color: #e8e8e8;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.85rem;
+
+    .guess-word {
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .past-games-btn:hover { background: #4a4a4c; }
-    #past-games-panel {
-      display: none;
-      width: 100%;
-      max-width: 500px;
-      background: #1a1a1b;
-      border: 1px solid #3a3a3c;
-      border-radius: 8px;
-      padding: 16px;
+
+    .guess-hint {
+      font-size: 0.74rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .guess-rank {
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .rank-1 { background: var(--green); color: white; }
+    .rank-hot { background: linear-gradient(180deg, #b59f3b 0%, #a88d29 100%); color: white; }
+    .rank-warm { background: #3a3a3c; color: #f2f2f2; }
+    .rank-cold { background: #171718; color: var(--muted); border-color: var(--line); }
+
+    .stats {
       margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      min-height: 18px;
+      text-align: center;
     }
-    #past-games-panel h3 { margin-bottom: 12px; font-size: 1rem; }
-    .past-game-item {
+
+    .history-panel {
+      display: none;
+      margin-top: 18px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .history-panel.visible { display: block; }
+
+    .history-panel h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .history-list {
       display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #2a2a2b;
-      cursor: pointer;
+      flex-direction: column;
+      gap: 8px;
     }
-    .past-game-item:hover { color: #6aaa64; }
-    .stats { margin-top: 20px; color: #888; font-size: 0.85rem; text-align: center; }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .history-item:hover {
+      background: rgba(106,170,100,0.06);
+      border-color: rgba(106,170,100,0.35);
+    }
+
+    .history-item span:first-child {
+      color: var(--text);
+    }
+
+    .history-item span:last-child {
+      color: var(--green);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
-
-  <h1>Kontext</h1>
-  <p class="subtitle">Finde das geheime Wort durch semantische Nähe</p>
-
-  <div class="header-row">
-    <span class="date-display" id="date-display">Heute</span>
-    <button class="past-games-btn" id="past-games-btn">📅 Vergangene Spiele</button>
-  </div>
-
-  <div class="game-container">
-    <div class="input-row">
-      <input type="text" id="guess-input" placeholder="Dein Wort..." autocomplete="off" autofocus>
-      <button id="guess-btn">Raten</button>
+  <div class="app">
+    <div class="topbar">
+      <h1>Kontext</h1>
+      <button id="history-toggle" class="ghost-btn" type="button">📅 Verlauf</button>
     </div>
-    <div id="message"></div>
-    <ul class="guess-list" id="guess-list"></ul>
-    <div class="stats" id="stats"></div>
-  </div>
 
-  <div id="past-games-panel">
-    <h3>Vergangene Spiele</h3>
-    <div id="past-games-list"></div>
+    <div class="subtitle">Finde das geheime Wort durch semantische Nähe</div>
+
+    <div class="panel">
+      <div class="date-pill" id="date-display">Heute</div>
+
+      <div class="input-row" style="margin-top: 18px;">
+        <input id="guess-input" type="text" autocomplete="off" spellcheck="false" placeholder="Dein Wort..." />
+        <button id="guess-btn" type="button">Raten</button>
+      </div>
+
+      <div id="message" aria-live="polite"></div>
+      <ul id="guess-list" class="guess-list"></ul>
+      <div id="stats" class="stats"></div>
+    </div>
+
+    <div id="history-panel" class="history-panel">
+      <h3>Vergangene Spiele</h3>
+      <div id="history-list" class="history-list"></div>
+    </div>
   </div>
 
   <script>
-    // ============================================================
-    // KONFIGURATION
-    // ============================================================
-    // Ersetze diese URL mit deiner tatsächlichen Backend-URL,
-    // sobald du die Serverless Function deployt hast.
-    // Für lokale Tests: http://localhost:3000
-    const API_BASE = 'https://kontexto-nu.vercel.app/api';
+    const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:3000/api'
+      : '/api';
 
-    // ============================================================
-    // SPIELZUSTAND
-    // ============================================================
-    let currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    let secretWord = null;
-    let guesses = [];
-    let isSolved = false;
+    const state = {
+      currentDate: new Date().toISOString().split('T')[0],
+      secretWord: null,
+      guesses: [],
+      solved: false
+    };
 
-    // ============================================================
-    // DOM-ELEMENTE
-    // ============================================================
     const guessInput = document.getElementById('guess-input');
     const guessBtn = document.getElementById('guess-btn');
     const guessList = document.getElementById('guess-list');
     const messageEl = document.getElementById('message');
     const dateDisplay = document.getElementById('date-display');
     const statsEl = document.getElementById('stats');
-    const pastGamesBtn = document.getElementById('past-games-btn');
-    const pastGamesPanel = document.getElementById('past-games-panel');
-    const pastGamesList = document.getElementById('past-games-list');
+    const historyBtn = document.getElementById('history-toggle');
+    const historyPanel = document.getElementById('history-panel');
+    const historyList = document.getElementById('history-list');
 
-    // ============================================================
-    // INITIALISIERUNG
-    // ============================================================
-    async function init() {
-      await loadDailyWord(currentDate);
-      renderDate();
-      setupEventListeners();
+    function formatDate(dateString, opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) {
+      const date = new Date(dateString + 'T12:00:00');
+      return date.toLocaleDateString('de-DE', opts);
     }
 
-    function setupEventListeners() {
-      guessBtn.addEventListener('click', submitGuess);
-      guessInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') submitGuess();
-      });
-      pastGamesBtn.addEventListener('click', togglePastGames);
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
     }
 
-    // ============================================================
-    // TÄGLICHES WORT LADEN
-    // ============================================================
-    async function loadDailyWord(date) {
-      try {
-        messageEl.textContent = 'Lade Wort des Tages...';
-        const res = await fetch(`${API_BASE}/daily-word?date=${date}`);
-        if (!res.ok) throw new Error('Fehler beim Laden');
-        const data = await res.json();
-        secretWord = data.word;
-        guesses = [];
-        isSolved = false;
-        renderGuesses();
-        messageEl.textContent = '';
-        guessInput.disabled = false;
-        guessBtn.disabled = false;
-        guessInput.focus();
-      } catch (err) {
-        messageEl.textContent = '⚠️ Konnte das Wort des Tages nicht laden.';
-        console.error(err);
-      }
+    function renderDate() {
+      const isToday = state.currentDate === new Date().toISOString().split('T')[0];
+      dateDisplay.textContent = isToday ? 'Heute' : formatDate(state.currentDate);
     }
 
-    // ============================================================
-    // VERMUTUNG ABSENDEN
-    // ============================================================
-    async function submitGuess() {
-      const word = guessInput.value.trim().toLowerCase();
-      if (!word || isSolved) return;
-
-      // Duplikat prüfen
-      if (guesses.some(g => g.word === word)) {
-        messageEl.textContent = 'Dieses Wort hast du schon geraten.';
-        return;
-      }
-
-      guessInput.value = '';
-      guessBtn.disabled = true;
-      messageEl.textContent = 'Berechne Ähnlichkeit...';
-
-      try {
-        const res = await fetch(`${API_BASE}/guess`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ guess: word, date: currentDate })
-        });
-
-        if (!res.ok) throw new Error('API-Fehler');
-        const data = await res.json();
-
-        guesses.push({
-          word: word,
-          rank: data.rank,
-          total: data.total,
-          hint: getHint(data.rank)
-        });
-
-        // Sortieren: bester Rang zuerst
-        guesses.sort((a, b) => a.rank - b.rank);
-        renderGuesses();
-        updateStats();
-
-        if (data.rank === 1) {
-          isSolved = true;
-          messageEl.textContent = `🎉 Richtig! Das Wort war "${secretWord}".`;
-          guessInput.disabled = true;
-          guessBtn.disabled = true;
-        } else {
-          messageEl.textContent = `"${word}" ist auf Platz ${data.rank} von ${data.total}.`;
-        }
-      } catch (err) {
-        messageEl.textContent = '⚠️ Fehler bei der Berechnung.';
-        console.error(err);
-      } finally {
-        guessBtn.disabled = isSolved;
-        if (!isSolved) guessInput.focus();
-      }
+    function getRankClass(rank) {
+      if (rank === 1) return 'rank-1';
+      if (rank <= 100) return 'rank-hot';
+      if (rank <= 1000) return 'rank-warm';
+      return 'rank-cold';
     }
 
-    // ============================================================
-    // HINWEIS-TEXT BASIEREND AUF RANG
-    // ============================================================
     function getHint(rank) {
       if (rank === 1) return 'Das gesuchte Wort!';
       if (rank <= 10) return 'Extrem heiß!';
@@ -270,95 +355,169 @@
       return 'Kalt';
     }
 
-    // ============================================================
-    // RENDERING
-    // ============================================================
     function renderGuesses() {
       guessList.innerHTML = '';
-      guesses.forEach(g => {
+
+      state.guesses.forEach((entry) => {
         const li = document.createElement('li');
-        li.className = 'guess-item ' + getRankClass(g.rank);
+        li.className = 'guess-item ' + getRankClass(entry.rank);
         li.innerHTML = `
-          <div>
-            <div class="word">${escapeHtml(g.word)}</div>
-            <div class="hint">${g.hint}</div>
+          <div class="word-wrap">
+            <div class="guess-word">${escapeHtml(entry.word)}</div>
+            <div class="guess-hint">${escapeHtml(entry.hint)}</div>
           </div>
-          <div class="rank">#${g.rank.toLocaleString('de-DE')}</div>
+          <div class="guess-rank">#${Number(entry.rank).toLocaleString('de-DE')}</div>
         `;
         guessList.appendChild(li);
       });
     }
 
-    function getRankClass(rank) {
-      if (rank === 1) return 'rank-1';
-      if (rank <= 100) return 'rank-hot';
-      if (rank <= 1000) return 'rank-warm';
-      return 'rank-cold';
-    }
-
     function updateStats() {
-      if (guesses.length === 0) {
+      if (state.guesses.length === 0) {
         statsEl.textContent = '';
         return;
       }
-      const best = guesses[0];
-      statsEl.textContent = `Versuche: ${guesses.length} · Bester Rang: #${best.rank.toLocaleString('de-DE')}`;
+
+      const best = [...state.guesses].sort((a, b) => a.rank - b.rank)[0];
+      statsEl.textContent = `Versuche: ${state.guesses.length} · Bester Rang: #${Number(best.rank).toLocaleString('de-DE')}`;
     }
 
-    function renderDate() {
-      const d = new Date(currentDate + 'T12:00:00');
-      dateDisplay.textContent = d.toLocaleDateString('de-DE', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
+    function setMessage(text, isError = false) {
+      messageEl.textContent = text;
+      messageEl.style.color = isError ? '#ef5350' : '#f6d365';
     }
 
-    // ============================================================
-    // VERGANGENE SPIELE
-    // ============================================================
-    async function togglePastGames() {
-      if (pastGamesPanel.style.display === 'block') {
-        pastGamesPanel.style.display = 'none';
+    async function loadDailyWord(date = state.currentDate) {
+      state.currentDate = date;
+      state.guesses = [];
+      state.solved = false;
+      guessInput.value = '';
+      guessInput.disabled = false;
+      guessBtn.disabled = false;
+      renderDate();
+      renderGuesses();
+      updateStats();
+      setMessage('Lade geheimen Wort...');
+
+      try {
+        const res = await fetch(`${API_BASE}/daily-word?date=${encodeURIComponent(date)}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Wort konnte nicht geladen werden');
+        }
+
+        const data = await res.json();
+        state.secretWord = String(data.word).trim().toLowerCase();
+        setMessage('Gib dein erstes Wort ein.');
+      } catch (error) {
+        console.error(error);
+        setMessage(error.message || 'Fehler beim Laden des Tagesworts.', true);
+      }
+    }
+
+    async function makeGuess() {
+      const raw = guessInput.value.trim();
+      if (!raw) {
+        setMessage('Bitte gib ein Wort ein.', true);
         return;
       }
-      pastGamesPanel.style.display = 'block';
-      pastGamesList.innerHTML = 'Lade...';
 
+      if (state.solved) {
+        return;
+      }
+
+      const word = raw.toLowerCase();
+      guessBtn.disabled = true;
+      guessInput.disabled = true;
+      setMessage('Berechne Ähnlichkeit...');
+
+      try {
+        const res = await fetch(`${API_BASE}/guess`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ guess: word, date: state.currentDate })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Fehler bei der Berechnung');
+        }
+
+        state.guesses.push({
+          word,
+          rank: Number(data.rank),
+          hint: getHint(Number(data.rank))
+        });
+
+        state.guesses.sort((a, b) => a.rank - b.rank);
+        renderGuesses();
+        updateStats();
+
+        if (Number(data.rank) === 1) {
+          state.solved = true;
+          setMessage(`🎉 Richtig! Das Wort war "${state.secretWord}".`);
+        } else {
+          setMessage(`"${escapeHtml(word)}" ist auf Platz ${Number(data.rank).toLocaleString('de-DE')} von ${Number(data.total).toLocaleString('de-DE')}.`);
+        }
+      } catch (error) {
+        console.error(error);
+        setMessage(error.message || 'Fehler bei der Berechnung.', true);
+      } finally {
+        if (!state.solved) {
+          guessInput.disabled = false;
+          guessBtn.disabled = false;
+          guessInput.focus();
+        }
+      }
+    }
+
+    async function loadHistory() {
       try {
         const res = await fetch(`${API_BASE}/past-games`);
         const data = await res.json();
-        pastGamesList.innerHTML = '';
-        data.games.forEach(g => {
-          const div = document.createElement('div');
-          div.className = 'past-game-item';
-          div.innerHTML = `<span>${g.dateFormatted}</span><span>▶ Spielen</span>`;
-          div.addEventListener('click', () => {
-            currentDate = g.date;
-            pastGamesPanel.style.display = 'none';
-            loadDailyWord(currentDate);
-            renderDate();
+        if (!res.ok) {
+          throw new Error(data.error || 'Verlauf konnte nicht geladen werden');
+        }
+
+        historyList.innerHTML = '';
+        (data.games || []).forEach((game) => {
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          item.innerHTML = `
+            <span>${escapeHtml(game.dateFormatted)}</span>
+            <span>Spielen</span>
+          `;
+          item.addEventListener('click', () => {
+            historyPanel.classList.remove('visible');
+            loadDailyWord(game.date);
           });
-          pastGamesList.appendChild(div);
+          historyList.appendChild(item);
         });
-      } catch (err) {
-        pastGamesList.innerHTML = 'Fehler beim Laden.';
-        console.error(err);
+      } catch (error) {
+        console.error(error);
+        historyList.innerHTML = '<div class="history-item"><span>Fehler beim Laden</span></div>';
       }
     }
 
-    // ============================================================
-    // HILFSFUNKTIONEN
-    // ============================================================
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
+    historyBtn.addEventListener('click', async () => {
+      const shouldOpen = !historyPanel.classList.contains('visible');
+      historyPanel.classList.toggle('visible', shouldOpen);
+      if (shouldOpen) {
+        await loadHistory();
+      }
+    });
 
-    // Start
-    init();
+    guessBtn.addEventListener('click', makeGuess);
+    guessInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        makeGuess();
+      }
+    });
+
+    renderDate();
+    loadDailyWord();
   </script>
 </body>
 </html>
